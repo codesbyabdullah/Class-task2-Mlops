@@ -1,0 +1,32 @@
+pipeline {
+    agent any
+    environment {
+        registry = 'codesbyabdullah/newImage'  
+        registryCredential = 'dockerhub_id'  
+        dockerImage = ''
+    }
+    stages {
+        stage("Checkout") {
+            steps {
+                git branch: 'main', url: 'https://github.com/codesbyabdullah/Class-task2-Mlops.git'  
+            }
+        }
+        stage("Building Docker Image") {
+            steps {
+                script {
+                    dockerImage = docker.build("${registry}:${env.BUILD_NUMBER}")  
+                }
+            }
+        }
+        stage("Pushing Docker Image") {
+            steps {
+                script {
+                    docker.withRegistry('https://index.docker.io/v1/', registryCredential) {
+                        dockerImage.push() 
+                        dockerImage.push("latest")
+                    }
+                }
+            }
+        }
+    }
+}
